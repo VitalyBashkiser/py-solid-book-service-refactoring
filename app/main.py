@@ -1,10 +1,10 @@
 import json
-import xml.etree.ElementTree as ET
+import xml.etree.ElementTree as ElementTree
 from abc import ABC, abstractmethod
 
 
 class Book:
-    def __init__(self, title: str, content: str):
+    def __init__(self, title: str, content: str) -> None:
         self.title = title
         self.content = content
 
@@ -56,17 +56,22 @@ class JSONSerializeStrategy(SerializeStrategy):
 
 class XMLSerializeStrategy(SerializeStrategy):
     def serialize(self, title: str, content: str) -> str:
-        root = ET.Element("book")
-        title_elem = ET.SubElement(root, "title")
+        root = ElementTree.Element("book")
+        title_elem = ElementTree.SubElement(root, "title")
         title_elem.text = title
-        content_elem = ET.SubElement(root, "content")
+        content_elem = ElementTree.SubElement(root, "content")
         content_elem.text = content
-        return ET.tostring(root, encoding="unicode")
+        return ElementTree.tostring(root, encoding="unicode")
 
 
 class BookService:
-    def __init__(self, book: Book, display_strategy: DisplayStrategy,
-                 print_strategy: PrintStrategy, serialize_strategy: SerializeStrategy):
+    def __init__(
+        self,
+        book: Book,
+        display_strategy: DisplayStrategy,
+        print_strategy: PrintStrategy,
+        serialize_strategy: SerializeStrategy,
+    ) -> None:
         self.book = book
         self.display_strategy = display_strategy
         self.print_strategy = print_strategy
@@ -79,16 +84,22 @@ class BookService:
         self.print_strategy.print(self.book.title, self.book.content)
 
     def serialize(self) -> str:
-        return self.serialize_strategy.serialize(self.book.title, self.book.content)
+        return self.serialize_strategy.serialize(
+            self.book.title, self.book.content
+        )
 
 
 def main(book: Book, commands: list[tuple[str, str]]) -> None | str:
     for cmd, method_type in commands:
         if cmd == "display":
             if method_type == "console":
-                service = BookService(book, ConsoleDisplayStrategy(), None, None)
+                service = BookService(
+                    book, ConsoleDisplayStrategy(), None, None
+                )
             elif method_type == "reverse":
-                service = BookService(book, ReverseDisplayStrategy(), None, None)
+                service = BookService(
+                    book, ReverseDisplayStrategy(), None, None
+                )
             else:
                 raise ValueError(f"Unknown display type: {method_type}")
             service.display()
@@ -102,7 +113,9 @@ def main(book: Book, commands: list[tuple[str, str]]) -> None | str:
             service.print_book()
         elif cmd == "serialize":
             if method_type == "json":
-                service = BookService(book, None, None, JSONSerializeStrategy())
+                service = BookService(
+                    book, None, None, JSONSerializeStrategy()
+                )
             elif method_type == "xml":
                 service = BookService(book, None, None, XMLSerializeStrategy())
             else:
